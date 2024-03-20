@@ -59,18 +59,12 @@ map.on('load', () => {
         "type": "geojson",
         "data": envresult  // use bbox geojson variable as data source
     });
+     //Add datasource using GeoJSON variable
+    map.addSource('collisionData', {
+        type: 'geojson',
+        data: collisionPtsJson
+    });    
 
-    map.addLayer({
-        "id": "colEnvelope",
-        "type": "fill",
-        "source": "envelopeGeoJSON",
-        "paint": {
-            'fill-color': "red",
-            'fill-opacity': 0.5,
-            'fill-outline-color': "black"
-        }
-    });
-        
     let bboxcoords = envresult.features[0].bbox;
         var cellSide = 0.5;
         var options = {units: 'kilometers'};
@@ -79,20 +73,19 @@ map.on('load', () => {
     let collishex = turf.collect(hexGrid, collisionPtsJson, '_id', 'values');
        
     let maxcollis = 0;
-    collishex.features.forEach((feature) => {
+    collishex.features.forEach((feature) => { //Loop through each hexagon from hex grid
         let count = 0;
-        collisionPtsJson.features.forEach(point => {
-            if (turf.booleanContains(feature, point)) {
+        collisionPtsJson.features.forEach(point => { //Loop through each point in colection
+            if (turf.booleanContains(feature, point)) { //If the point intersects with hex, acumulate counter.
                 count++;
             }
         });
         feature.properties.values = count;
-            if(feature.properties.values > maxcollis){
+            if(feature.properties.values > maxcollis){ //find the largest value of accodents of all the hex features
                 maxcollis = feature.properties.values
             }
         });
-
-
+        
     map.addLayer({
         'id': 'colHexmap',
         'type': 'fill',
@@ -110,22 +103,8 @@ map.on('load', () => {
             'fill-opacity' : 0.8
         }
     });
+    
 
-    //Add datasource using GeoJSON variable
-    map.addSource('collisionData', {
-        type: 'geojson',
-        data: collisionPtsJson
-    });
-
-    map.addLayer({
-        'id': 'collisionDataPts',
-        'type': 'circle',
-        'source': 'collisionData',
-        'paint': {
-            'circle-radius': 4,
-            'circle-color': 'Red'
-        },    
-    });  
 });
 
 map.on('click', 'collisionDataPts', (e) => {
@@ -160,22 +139,45 @@ legendcheck.addEventListener('click', () => {
 });
 
 document.getElementById('ptcheck').addEventListener('change', (e) => {
+    map.addLayer({
+        'id': 'collisionDataPts',
+        'type': 'circle',
+        'source': 'collisionData',
+        'paint': {
+            'circle-radius': 4,
+            'circle-color': 'Red'
+        },    
+    }); 
+
     map.setLayoutProperty(
         'collisionDataPts',
         'visibility',
         e.target.checked ? 'visible' : 'none'
     );
 });
-document.getElementById('hexcheck').addEventListener('change', (e) => {
+
+document.getElementById('bboxcheck').addEventListener('change', (e) => {
+    map.addLayer({
+        "id": "colEnvelope",
+        "type": "fill",
+        "source": "envelopeGeoJSON",
+        "paint": {
+            'fill-color': "red",
+            'fill-opacity': 0.5,
+            'fill-outline-color': "black"
+        }
+    });
+
     map.setLayoutProperty(
-        'colHexmap',
+        'colEnvelope',
         'visibility',
         e.target.checked ? 'visible' : 'none'
     );
 });
-document.getElementById('bboxcheck').addEventListener('change', (e) => {
+
+document.getElementById('hexcheck').addEventListener('change', (e) => {
     map.setLayoutProperty(
-        'colEnvelope',
+        'colHexmap',
         'visibility',
         e.target.checked ? 'visible' : 'none'
     );
