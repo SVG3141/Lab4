@@ -112,7 +112,7 @@ map.on('click', 'collisionDataPts', (e) => {
     const coords = e.features[0].geometry.coordinates.slice();
     new mapboxgl.Popup()
         .setLngLat(coords)
-        .setHTML(acType)
+        .setHTML("Injury Type: " + acType + " injury")
         .addTo(map);
 });
 map.on('mouseenter', 'collisionDataPts', () => {
